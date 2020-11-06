@@ -100,10 +100,6 @@ public class AtomicFileOutputStream extends FilterOutputStream {
         this(path, false);
     }
 
-    private static Path getPathOfTemporaryFile(Path targetFile) {
-        return FileUtil.addExtension(targetFile, TEMPORARY_EXTENSION);
-    }
-
     private static Path getPathOfBackupFile(Path targetFile) {
         return FileUtil.addExtension(targetFile, BACKUP_EXTENSION);
     }
@@ -134,20 +130,13 @@ public class AtomicFileOutputStream extends FilterOutputStream {
     public void abort() {
         try {
             super.close();
-            Files.deleteIfExists(temporaryFile);
             Files.deleteIfExists(backupFile);
         } catch (IOException exception) {
-            LOGGER.debug("Unable to abort writing to file " + temporaryFile, exception);
+            LOGGER.debug("Unable to abort writing to file " + this.targetFile, exception);
         }
     }
 
     private void cleanup() {
-        try {
-            Files.deleteIfExists(temporaryFile);
-        } catch (IOException exception) {
-            LOGGER.debug("Unable to delete file " + temporaryFile, exception);
-        }
-
         try {
             if (temporaryFileLock != null) {
                 temporaryFileLock.release();
